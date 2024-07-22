@@ -9,14 +9,12 @@ cat output/subaccounts.json | jq -r '.value[] | .guid, .subdomain' | while IFS=,
   read subdomain
   # echo "Subaccount: $subaccount, subdomain: $subdomain"
   btp --format json list security/trust -sa $subaccount > output/trust.json
-  cat output/trust.json | jq -r '.[].originKey' | while read -r originKey; do
-    btp --format json get security/trust $originKey -sa $subaccount > output/trust-details.json
-    cat output/trust-details.json | jq -r '.protocol' | while read -r protocol; do
-      # When protocol is SAML, then print the Subaccount / Origin Details
-      if [ "$protocol" == "SAML" ]; then
-        echo "subdomain: $subdomain"
-        echo "originKey: $originKey"
-      fi
-    done
+  cat output/trust.json | jq -r '.[] | .originKey, .protocol' | while read -r originKey; do
+    read protocol
+    # When protocol is SAML, then print the Subaccount / Origin Details
+    if [ "$protocol" == "SAML" ]; then
+      echo "subdomain: $subdomain"
+      echo "originKey: $originKey"
+    fi
   done
 done
